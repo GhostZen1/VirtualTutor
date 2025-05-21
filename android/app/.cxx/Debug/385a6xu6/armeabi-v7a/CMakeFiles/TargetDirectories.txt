@@ -1,0 +1,2 @@
+C:/Users/imana/Desktop/UTEM/SEM_4/tosl_operation/android/app/.cxx/Debug/385a6xu6/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/imana/Desktop/UTEM/SEM_4/tosl_operation/android/app/.cxx/Debug/385a6xu6/armeabi-v7a/CMakeFiles/rebuild_cache.dir
