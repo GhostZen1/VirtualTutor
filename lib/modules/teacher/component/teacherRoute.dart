@@ -1,18 +1,18 @@
 import 'package:tosl_operation/modules/global.dart';
-import 'package:tosl_operation/modules/student/screen/profile.dart';
 import 'package:tosl_operation/modules/teacher/screen/courseList.dart';
 import 'package:tosl_operation/modules/teacher/screen/subscreen/studentList.dart';
 import 'package:tosl_operation/modules/teacher/screen/teacherHomepage.dart';
+import 'package:tosl_operation/shared/common/profile.dart';
 
 class TeacherRoutePage extends StatefulWidget {
   final int userId;
   const TeacherRoutePage({super.key, required this.userId});
 
   @override
-  _Route createState() => _Route();
+  Route createState() => Route();
 }
 
-class _Route extends State<TeacherRoutePage> {
+class Route extends State<TeacherRoutePage> {
   int _currentIndex = 0;
 
   // Track if we're in the sub-screen
@@ -46,6 +46,7 @@ class _Route extends State<TeacherRoutePage> {
         ));
       }),
       ProfileScreen(userId: widget.userId),
+      //ProfileScreen(userId: widget.userId),
     ];
 
     return Scaffold(

@@ -1,17 +1,18 @@
-import 'package:tosl_operation/modules/admin/screen/adminProfile.dart';
 import 'package:tosl_operation/modules/admin/screen/approveTeacher.dart';
 import 'package:tosl_operation/modules/admin/screen/dashboard.dart';
 import 'package:tosl_operation/modules/admin/screen/manageCourse.dart';
 import 'package:tosl_operation/modules/global.dart';
+import 'package:tosl_operation/shared/common/profile.dart';
 
 class AdminRoutePage extends StatefulWidget {
-  const AdminRoutePage({super.key});
+  final int userId;
+  const AdminRoutePage({super.key, required this.userId});
 
   @override
-  _Route createState() => _Route();
+  Route createState() => Route();
 }
 
-class _Route extends State<AdminRoutePage> {
+class Route extends State<AdminRoutePage> {
   int _currentIndex = 0;
 
   void _onNavTapped(int index) {
@@ -26,7 +27,9 @@ class _Route extends State<AdminRoutePage> {
       const DashboardScreen(),
       const ManageCourseScreen(),
       ApproveTeacherScreen(),
-      const AdminProfileScreen(),
+      ProfileScreen(
+        userId: widget.userId,
+      ),
     ];
 
     return Scaffold(

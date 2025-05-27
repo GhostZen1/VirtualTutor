@@ -19,7 +19,7 @@ class MainRouteManager extends StatelessWidget {
       case 'Teacher':
         return TeacherRoutePage(userId: userId);
       case 'Admin':
-        return const AdminRoutePage();
+        return AdminRoutePage(userId: userId);
       case 'Rejected':
         Future.delayed(Duration.zero, () {
           showDialog(

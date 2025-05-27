@@ -3,9 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 ThemeData appTheme() {
   return ThemeData(
-    primaryColor: Colors.blueAccent,
+    primaryColor: Colors.deepPurple,
     colorScheme: ColorScheme.fromSeed(
-      seedColor: Colors.blueAccent,
+      seedColor: Colors.deepPurple,
       secondary: Colors.amber,
       surface: Colors.white,
       onSurface: Colors.black87,
@@ -24,18 +24,18 @@ ThemeData appTheme() {
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0,
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: Colors.deepPurple,
       foregroundColor: Colors.white,
       titleTextStyle: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       ),
     ),
-    iconTheme: const IconThemeData(color: Colors.blueAccent, size: 24),
+    iconTheme: const IconThemeData(color: Colors.deepPurple, size: 24),
   );
 }

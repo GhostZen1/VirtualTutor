@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:tosl_operation/modules/global.dart';
 
 class CourseListScreen extends StatelessWidget {
@@ -20,39 +21,45 @@ class CourseListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          TextField(
-            decoration: InputDecoration(
-              hintText: "Search your courses...",
-              prefixIcon: const Icon(Icons.search),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Courses"),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                hintText: "Search your courses...",
+                prefixIcon: const Icon(Icons.search),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: ListView.separated(
-              itemCount: courseList.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final course = courseList[index];
-                return GestureDetector(
-                  onTap: () {
-                    onSelectCourse(course['title']);
-                  },
-                  child: CourseProgressCard(
-                    title: course['title'],
-                    ttlEnroll: course['total'],
-                    icon: course['icon'],
-                  ),
-                );
-              },
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.separated(
+                itemCount: courseList.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  final course = courseList[index];
+                  return GestureDetector(
+                    onTap: () {
+                      onSelectCourse(course['title']);
+                    },
+                    child: CourseProgressCard(
+                      title: course['title'],
+                      ttlEnroll: course['total'],
+                      icon: course['icon'],
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

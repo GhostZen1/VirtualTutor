@@ -1,21 +1,46 @@
 import 'package:tosl_operation/modules/auth/screen/login.dart';
 import 'package:tosl_operation/modules/global.dart';
+import 'package:tosl_operation/shared/common/policies.dart';
+import 'package:tosl_operation/shared/utils/getProfileData.dart';
 
-class AdminProfileScreen extends StatefulWidget {
-  const AdminProfileScreen({super.key});
+class ProfileScreen extends StatefulWidget {
+  final int userId;
+  const ProfileScreen({super.key, required this.userId});
 
   @override
-  AdminProfileScreenState createState() => AdminProfileScreenState();
+  ProfileScreenState createState() => ProfileScreenState();
 }
 
-class AdminProfileScreenState extends State<AdminProfileScreen> {
+class ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
+  late int userId;
+  ProfileModel? userData;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    userId = widget.userId;
+    loadUserData();
+  }
+
+  Future<void> loadUserData() async {
+    final fetchedUser = await ProfileServices.fetchUserById(widget.userId);
+
+    if (fetchedUser != null) {
+      setState(() {
+        userData = fetchedUser as ProfileModel?;
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Profile"),
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -24,7 +49,7 @@ class AdminProfileScreenState extends State<AdminProfileScreen> {
           children: [
             // Profile Header
             Text(
-              "Username Account",
+              '${userData?.username ?? 'Default'} Account',
               style: Theme.of(context)
                   .textTheme
                   .headlineMedium
@@ -48,9 +73,9 @@ class AdminProfileScreenState extends State<AdminProfileScreen> {
                   backgroundColor: Colors.blueAccent,
                   child: Icon(Icons.person, color: Colors.white),
                 ),
-                title: Text("Admin Name",
+                title: Text(userData?.username ?? 'Default',
                     style: Theme.of(context).textTheme.titleLarge),
-                subtitle: Text("admin@example.com",
+                subtitle: Text(userData?.email ?? 'default@mail.com',
                     style: Theme.of(context).textTheme.bodyMedium),
               ),
             ).animate().fadeIn(duration: 500.ms, delay: 400.ms),
@@ -109,6 +134,7 @@ class AdminProfileScreenState extends State<AdminProfileScreen> {
                       ),
                       const SizedBox(height: 12),
                       FormBuilderTextField(
+                        //TODO: Confirmation Password
                         name: 'confirm_password',
                         decoration: InputDecoration(
                           labelText: 'Confirm Password',
@@ -164,9 +190,10 @@ class AdminProfileScreenState extends State<AdminProfileScreen> {
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () {
-                  // Simulate policy view (replace with actual logic, e.g., open PDF or URL)
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Opening policies")),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const PoliciesScreen()),
                   );
                 },
               ),
@@ -180,9 +207,16 @@ class AdminProfileScreenState extends State<AdminProfileScreen> {
                   borderRadius: BorderRadius.circular(12)),
               child: ListTile(
                 contentPadding: const EdgeInsets.all(16),
-                title: Text("Logout",
-                    style: Theme.of(context).textTheme.titleLarge),
-                trailing: const Icon(Icons.logout),
+                title: Text(
+                  "Logout",
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.red,
+                      ),
+                ),
+                trailing: const Icon(
+                  Icons.logout,
+                  color: Colors.red,
+                ),
                 onTap: () {
                   Navigator.pushReplacement(
                     context,

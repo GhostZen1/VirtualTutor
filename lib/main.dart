@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       // ),
       theme: appTheme(),
       //home: const LoginScreen(),
-      home: AdminRoutePage(),
+      home: AdminRoutePage(userId: 3),
       //home: const TeacherRoutePage(userId: 2),
     );
   }
