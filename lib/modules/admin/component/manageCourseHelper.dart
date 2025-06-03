@@ -53,7 +53,7 @@ class ManageCourseHelper {
                   ),
                   items: teachersList.isEmpty
                       ? [
-                          DropdownMenuItem(
+                          const DropdownMenuItem(
                               value: "Unassigned", child: Text("Unassigned"))
                         ]
                       : teachersList
@@ -193,7 +193,7 @@ class ManageCourseHelper {
                     ),
                     items: teachersList.isEmpty
                         ? [
-                            DropdownMenuItem(
+                            const DropdownMenuItem(
                                 value: "Unassigned", child: Text("Unassigned"))
                           ]
                         : teachersList

@@ -66,47 +66,47 @@ class TeacherHomeScreen extends StatelessWidget {
               const SizedBox(height: 20),
 
               // Search Bar
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: "Search courses or students...",
-                    border: InputBorder.none,
-                    prefixIcon: Icon(Icons.search, color: Colors.grey),
-                  ),
-                ),
-              ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
-              const SizedBox(height: 20),
+              // Container(
+              //   padding:
+              //       const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              //   decoration: BoxDecoration(
+              //     color: Colors.white,
+              //     borderRadius: BorderRadius.circular(12),
+              //     boxShadow: [
+              //       BoxShadow(
+              //         color: Colors.black.withOpacity(0.1),
+              //         blurRadius: 4,
+              //         offset: const Offset(0, 2),
+              //       ),
+              //     ],
+              //   ),
+              //   child: const TextField(
+              //     decoration: InputDecoration(
+              //       hintText: "Search courses or students...",
+              //       border: InputBorder.none,
+              //       prefixIcon: Icon(Icons.search, color: Colors.grey),
+              //     ),
+              //   ),
+              // ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
+              // const SizedBox(height: 20),
 
               // Filters
               Wrap(
                 spacing: 10, // space between chips
                 runSpacing: 10, // space between rows if they wrap
                 children: [
-                  _filterChip(
-                    context,
-                    icon: Icons.menu_book,
-                    label: "My Courses",
-                    color: Colors.blue,
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text("Navigate to Courses List")),
-                      );
-                    },
-                  ),
+                  // _filterChip(
+                  //   context,
+                  //   icon: Icons.menu_book,
+                  //   label: "My Courses",
+                  //   color: Colors.blue,
+                  //   onTap: () {
+                  //     ScaffoldMessenger.of(context).showSnackBar(
+                  //       const SnackBar(
+                  //           content: Text("Navigate to Courses List")),
+                  //     );
+                  //   },
+                  // ),
                   _filterChip(
                     context,
                     icon: Icons.feedback,
@@ -142,30 +142,30 @@ class TeacherHomeScreen extends StatelessWidget {
               const SizedBox(height: 15),
 
               // Course Cards
-              Text(
-                "Your Courses",
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ).animate().fadeIn(duration: 500.ms, delay: 600.ms),
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 160,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: courses.length,
-                  itemBuilder: (context, index) {
-                    final course = courses[index];
-                    return _courseCard(
-                      title: course["title"],
-                      description: "${course['enrollments']} students enrolled",
-                      color: course["color"],
-                    ).animate().fadeIn(
-                        duration: 300.ms, delay: (index * 100 + 800).ms);
-                  },
-                ),
-              ),
-              const SizedBox(height: 20),
+              // Text(
+              //   "Your Courses",
+              //   style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              // ).animate().fadeIn(duration: 500.ms, delay: 600.ms),
+              // const SizedBox(height: 12),
+              // SizedBox(
+              //   height: 160,
+              //   child: ListView.builder(
+              //     scrollDirection: Axis.horizontal,
+              //     itemCount: courses.length,
+              //     itemBuilder: (context, index) {
+              //       final course = courses[index];
+              //       return _courseCard(
+              //         title: course["title"],
+              //         description: "${course['enrollments']} students enrolled",
+              //         color: course["color"],
+              //       ).animate().fadeIn(
+              //           duration: 300.ms, delay: (index * 100 + 800).ms);
+              //     },
+              //   ),
+              // ),
+              // const SizedBox(height: 20),
 
               // Modules Section
               Text(

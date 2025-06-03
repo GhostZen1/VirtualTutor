@@ -50,7 +50,7 @@ class ManageCourseScreenState extends State<ManageCourseScreen> {
             (entry) => entry.value == teacherId,
             orElse: () {
               print("No teacher found for teacherId: $teacherId");
-              return MapEntry("Unassigned", "");
+              return const MapEntry("Unassigned", "");
             },
           ).key;
         }

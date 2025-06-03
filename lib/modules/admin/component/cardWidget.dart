@@ -61,8 +61,8 @@ Widget buildNavCard(
           children: [
             CircleAvatar(
               backgroundColor: color.withOpacity(0.2),
-              child: Icon(icon, color: color, size: 24),
               radius: 20,
+              child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(

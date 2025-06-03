@@ -2,51 +2,79 @@ import 'package:tosl_operation/modules/global.dart';
 
 class CourseCard extends StatelessWidget {
   final String title;
-  final double rating;
-  final String duration;
+  final String teacher;
+  final String description;
   final IconData icon;
+  final bool isEnrolled;
+  final VoidCallback? onEnroll;
+  final VoidCallback? onTap;
 
   const CourseCard({
     super.key,
     required this.title,
-    required this.rating,
-    required this.duration,
+    required this.teacher,
+    required this.description,
     required this.icon,
+    this.isEnrolled = false,
+    this.onEnroll,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 50, color: Colors.deepPurple),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Row(
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(icon, size: 40, color: Colors.deepPurple),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.star, color: Colors.amber, size: 16),
-                    Text(rating.toString(),
-                        style: const TextStyle(fontSize: 14)),
-                    const SizedBox(width: 10),
-                    const Icon(Icons.schedule, size: 16, color: Colors.black87),
-                    Text(duration, style: const TextStyle(fontSize: 14)),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Teacher: $teacher",
+                      style: TextStyle(color: Colors.grey[700]),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              if (!isEnrolled)
+                ElevatedButton(
+                  onPressed: onEnroll,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                  ),
+                  child: const Text('Enroll'),
+                ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

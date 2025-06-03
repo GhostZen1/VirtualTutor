@@ -26,7 +26,7 @@ class Route extends State<AdminRoutePage> {
     final List<Widget> screens = [
       const DashboardScreen(),
       const ManageCourseScreen(),
-      ApproveTeacherScreen(),
+      const ApproveTeacherScreen(),
       ProfileScreen(
         userId: widget.userId,
       ),

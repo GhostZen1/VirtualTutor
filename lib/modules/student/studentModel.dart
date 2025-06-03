@@ -1,5 +1,5 @@
 class UserModel {
-  final int userId;
+  final int? userId;
   final String username;
   final String email;
   final String role;
@@ -9,7 +9,7 @@ class UserModel {
   final String? createDate;
 
   UserModel({
-    required this.userId,
+    this.userId,
     required this.username,
     required this.email,
     required this.role,
@@ -21,14 +21,21 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
-      userId: json['UserId'],
-      username: json['Username'],
-      email: json['Email'],
-      role: json['Role'],
-      dob: json['DOB'],
-      enrollCourse: json['EnrollCourse'],
-      progress: json['Progress'],
-      createDate: json['CreateDate'],
+      userId: json['UserId'] != null
+          ? int.tryParse(json['UserId'].toString())
+          : null,
+      username: json['username'] ?? '',
+      email: json['email'] ?? '',
+      role: json['role'] ?? '',
+      dob: json['dob'],
+      enrollCourse: json['enrollCourse'],
+      progress: json['progress'],
+      createDate: json['createDate'],
     );
+  }
+
+  @override
+  String toString() {
+    return 'UserModel{userId: $userId, username: $username, email: $email, role: $role}';
   }
 }

@@ -1,6 +1,7 @@
 import 'package:tosl_operation/modules/global.dart';
 import 'package:tosl_operation/modules/student/component/card.dart';
-import 'package:tosl_operation/modules/student/controlller/getUserDetail.dart';
+import 'package:tosl_operation/modules/student/controlller/courseController.dart';
+import 'package:tosl_operation/modules/student/screen/chapter.dart';
 import 'package:tosl_operation/modules/student/studentModel.dart';
 
 class CourseHomeScreen extends StatefulWidget {
@@ -9,40 +10,122 @@ class CourseHomeScreen extends StatefulWidget {
   const CourseHomeScreen({super.key, required this.userId});
 
   @override
-  State<CourseHomeScreen> createState() => _CourseHomeScreenState();
+  State<CourseHomeScreen> createState() => CourseHomeScreenState();
 }
 
-class _CourseHomeScreenState extends State<CourseHomeScreen> {
-  late int userId;
-  UserModel? userData;
-  bool isLoading = true;
+class CourseHomeScreenState extends State<CourseHomeScreen> {
+  final CourseController controller = CourseController();
+  final TextEditingController searchController = TextEditingController();
 
-  final List<String> categories = ["All", "Design", "Programming", "UI/UX"];
-  final String selectedCategory = "Design";
+  UserModel? userData;
+  List<Map<String, dynamic>> courses = [];
+  bool isLoading = true;
+  String selectedCategory = 'All';
+  String searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    userId = widget.userId;
-    loadUserData();
+    loadData();
 
-    print("User ID: $userId");
+    // Listen for changes in the search text field
+    searchController.addListener(() {
+      setState(() {
+        searchQuery = searchController.text.trim().toLowerCase();
+      });
+    });
   }
 
-  Future<void> loadUserData() async {
-    final fetchedUser = await StudentServices.fetchUserById(widget.userId);
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
 
-    if (fetchedUser != null) {
+  Future<void> loadData() async {
+    try {
+      final data = await controller.loadUserAndCourses(widget.userId);
       setState(() {
-        userData = fetchedUser as UserModel?;
+        userData = data['user'];
+        courses = data['courses'];
         isLoading = false;
       });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
     }
+  }
+
+  List<String> getCategories() {
+    final categories =
+        courses.map((course) => course['category'] as String).toSet().toList();
+    return ['All', ...categories];
+  }
+
+  IconData _getIconData(String iconName) {
+    switch (iconName.toLowerCase()) {
+      case 'developer_board':
+        return Icons.developer_board;
+      case 'code':
+        return Icons.code;
+      case 'design_services':
+        return Icons.design_services;
+      default:
+        return Icons.book;
+    }
+  }
+
+  Future<void> _enrollInCourse(int courseId) async {
+    setState(() {
+      isLoading = true;
+    });
+    final success = await controller.enrollInCourse(widget.userId, courseId);
+    setState(() {
+      isLoading = false;
+    });
+    if (success) {
+      await loadData();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Enrolled successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to enroll')),
+      );
+    }
+  }
+
+  List<Map<String, dynamic>> getFilteredCourses() {
+    return courses.where((course) {
+      final categoryMatch = selectedCategory == 'All' ||
+          course['category'].toString().toLowerCase() ==
+              selectedCategory.toLowerCase();
+      final titleMatch = course['title']
+          .toString()
+          .toLowerCase()
+          .contains(searchQuery.toLowerCase());
+      final teacherMatch = course['teacher']
+          .toString()
+          .toLowerCase()
+          .contains(searchQuery.toLowerCase());
+      return categoryMatch && (titleMatch || teacherMatch);
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
+    final filteredCourses = getFilteredCourses();
+
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Homepage"),
+        backgroundColor: Colors.deepPurple,
+        automaticallyImplyLeading: false,
+      ),
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
@@ -58,9 +141,8 @@ class _CourseHomeScreenState extends State<CourseHomeScreen> {
               const Text("What do you want to learn?",
                   style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 20),
-
-              // Search
               TextField(
+                controller: searchController,
                 decoration: InputDecoration(
                   hintText: "Search..",
                   prefixIcon: const Icon(Icons.search),
@@ -71,103 +153,80 @@ class _CourseHomeScreenState extends State<CourseHomeScreen> {
                   ),
                 ),
               ),
-
-              const SizedBox(height: 20),
-
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("New Course!",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 16)),
-                          SizedBox(height: 4),
-                          Text("User Experience Class",
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 14)),
-                          SizedBox(height: 10),
-                          ElevatedButton(
-                            onPressed: null,
-                            style: ButtonStyle(
-                              backgroundColor:
-                                  MaterialStatePropertyAll(Colors.white),
-                            ),
-                            child: Text("View now",
-                                style: TextStyle(color: Colors.deepPurple)),
-                          )
-                        ],
-                      ),
-                    ),
-                    Icon(Icons.laptop_mac, size: 60, color: Colors.white),
-                  ],
-                ),
-              ),
-
               const SizedBox(height: 30),
-
-              // Course title
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Course",
+                  const Text("Courses",
                       style:
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  Text("View All", style: TextStyle(color: Colors.deepPurple)),
+                  // TextButton(
+                  //   onPressed: () {},
+                  //   child: const Text("View All",
+                  //       style: TextStyle(color: Colors.deepPurple)),
+                  // ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
-              // Categories
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: categories.map((category) {
-                  bool isSelected = category == selectedCategory;
-                  return Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color:
-                          isSelected ? Colors.deepPurple : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.deepPurple),
+              Wrap(
+                spacing: 8,
+                children: getCategories().map((category) {
+                  final isSelected = category == selectedCategory;
+                  return ChoiceChip(
+                    label: Text(category),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) {
+                        setState(() {
+                          selectedCategory = category;
+                        });
+                      }
+                    },
+                    selectedColor: Colors.deepPurple,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : Colors.deepPurple,
                     ),
-                    child: Text(
-                      category,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.deepPurple,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    backgroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.deepPurple),
                   );
                 }).toList(),
               ),
-
               const SizedBox(height: 30),
-
-              const CourseCard(
-                title: "Photoshop Course",
-                rating: 5.0,
-                duration: "5h 15m",
-                icon: Icons.camera_alt,
-              ),
-
-              const SizedBox(height: 16),
-
-              const CourseCard(
-                title: "3D Design",
-                rating: 4.6,
-                duration: "10h 30m",
-                icon: Icons.view_in_ar,
-              ),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : filteredCourses.isEmpty
+                      ? const Center(child: Text('No courses found'))
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: filteredCourses.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final course = filteredCourses[index];
+                            final isEnrolled = course['isEnrolled'] ?? false;
+                            return CourseCard(
+                              title: course['title'],
+                              teacher: course['teacher'],
+                              description: course['description'],
+                              icon: _getIconData(course['icon']),
+                              isEnrolled: isEnrolled,
+                              onEnroll: () => _enrollInCourse(
+                                  int.parse(course['courseId'].toString())),
+                              onTap: isEnrolled
+                                  ? () => Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ChapterScreen(
+                                            courseId: course['courseId'],
+                                            courseTitle: course['title'],
+                                          ),
+                                        ),
+                                      )
+                                  : null,
+                            );
+                          },
+                        ),
             ],
           ),
         ),

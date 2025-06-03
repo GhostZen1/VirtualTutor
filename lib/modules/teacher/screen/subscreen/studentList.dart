@@ -60,8 +60,8 @@ class StudentListScreen extends StatelessWidget {
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
               leading: CircleAvatar(
-                child: Text(student["name"][0]),
                 backgroundColor: Colors.blueAccent,
+                child: Text(student["name"][0]),
               ),
               title: Text(
                 student["name"],

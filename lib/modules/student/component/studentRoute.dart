@@ -1,7 +1,7 @@
 import 'package:tosl_operation/modules/global.dart';
 import 'package:tosl_operation/modules/student/screen/course.dart';
 import 'package:tosl_operation/modules/student/screen/homepage.dart';
-import 'package:tosl_operation/modules/student/screen/profile.dart';
+import 'package:tosl_operation/shared/common/profile.dart' show ProfileScreen;
 
 class StudentRoutePage extends StatefulWidget {
   final int userId;
@@ -24,7 +24,7 @@ class _Route extends State<StudentRoutePage> {
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       CourseHomeScreen(userId: widget.userId),
-      MyCoursesScreen(),
+      MyCoursesScreen(userId: widget.userId),
       ProfileScreen(userId: widget.userId),
     ];
 

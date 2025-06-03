@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:tosl_operation/modules/global.dart';
 
 class CourseListScreen extends StatelessWidget {
@@ -25,6 +24,7 @@ class CourseListScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Courses"),
         backgroundColor: Colors.deepPurple,
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

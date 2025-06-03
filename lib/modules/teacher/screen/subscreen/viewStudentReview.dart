@@ -43,8 +43,8 @@ class ViewStudentReviewScreen extends StatelessWidget {
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
                     leading: CircleAvatar(
-                      child: Text(review["student"][0]),
                       backgroundColor: Colors.blueAccent,
+                      child: Text(review["student"][0]),
                     ),
                     title: Text(
                       review["student"],
