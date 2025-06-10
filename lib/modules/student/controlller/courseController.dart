@@ -102,6 +102,31 @@ class CourseController {
     }
   }
 
+  Future<bool> updateMaterialStatus(
+      int materialId, bool isDone, String userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiBase.baseUrl}updateMaterialStatus.php'),
+        body: jsonEncode({
+          'materialId': materialId,
+          'isDone': isDone ? 1 : 0,
+          'userId': userId,
+        }),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      print('Response: ${response.body}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['status'] == 'success';
+      }
+      return false;
+    } catch (e) {
+      print('Error updating material status: $e');
+      return false;
+    }
+  }
+
   Future<Map<String, dynamic>> fetchEnrollCourse(int userId) async {
     final response = await http.post(
       Uri.parse('${ApiBase.baseUrl}fetchEnrollCourse.php?userId=$userId'),

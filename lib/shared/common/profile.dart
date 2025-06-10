@@ -1,5 +1,4 @@
 import 'package:tosl_operation/modules/global.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:tosl_operation/modules/auth/screen/login.dart';
 import 'package:tosl_operation/shared/common/policies.dart';
 import 'package:tosl_operation/shared/utils/getProfileData.dart';
@@ -44,7 +43,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Profile")),
+      appBar: AppBar(
+        title: const Text("Profile"),
+        automaticallyImplyLeading: false,
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : userData == null

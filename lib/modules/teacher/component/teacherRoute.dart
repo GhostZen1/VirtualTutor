@@ -1,5 +1,6 @@
 import 'package:tosl_operation/modules/global.dart';
 import 'package:tosl_operation/modules/teacher/screen/courseList.dart';
+import 'package:tosl_operation/modules/teacher/screen/manage/manageChapter.dart';
 import 'package:tosl_operation/modules/teacher/screen/subscreen/studentList.dart';
 import 'package:tosl_operation/modules/teacher/screen/teacherHomepage.dart';
 import 'package:tosl_operation/shared/common/profile.dart';
@@ -35,18 +36,17 @@ class Route extends State<TeacherRoutePage> {
   Widget build(BuildContext context) {
     final List<Widget> screens = [
       TeacherHomeScreen(userId: widget.userId),
-      CourseListScreen(onSelectCourse: (courseTitle) {
-        _showInnerScreen(StudentListScreen(
-          courseTitle: courseTitle,
-          onBack: () {
-            setState(() {
-              _innerScreen = null;
-            });
-          },
-        ));
-      }),
+      CourseListScreen(
+        currentUserId: widget.userId.toString(), // Convert int to String
+        onSelectCourse: (courseTitle, courseId) {
+          _showInnerScreen(ManageChapterScreen(
+            courseTitle: courseTitle,
+            courseId: int.parse(courseId),
+            userId: widget.userId.toString(),
+          ));
+        },
+      ),
       ProfileScreen(userId: widget.userId),
-      //ProfileScreen(userId: widget.userId),
     ];
 
     return Scaffold(

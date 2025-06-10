@@ -5,12 +5,13 @@ import 'package:tosl_operation/modules/student/screen/material.dart';
 class ChapterScreen extends StatefulWidget {
   final String courseId;
   final String courseTitle;
+  final String userId;
 
-  const ChapterScreen({
-    super.key,
-    required this.courseId,
-    required this.courseTitle,
-  });
+  const ChapterScreen(
+      {super.key,
+      required this.courseId,
+      required this.courseTitle,
+      required this.userId});
 
   @override
   State<ChapterScreen> createState() => _ChapterScreenState();
@@ -27,7 +28,6 @@ class _ChapterScreenState extends State<ChapterScreen> {
     loadChapters();
   }
 
-  // Load chapters for the course
   Future<void> loadChapters() async {
     try {
       final fetchedChapters =
@@ -81,6 +81,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
                                       builder: (context) => MaterialScreen(
                                         chapterId: chapter['id'],
                                         chapterTitle: chapter['title'],
+                                        userId: widget.userId,
                                       ),
                                     ),
                                   );

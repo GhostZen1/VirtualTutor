@@ -1,25 +1,23 @@
+import 'package:get/get.dart';
 import 'package:tosl_operation/modules/global.dart';
+import 'package:tosl_operation/modules/teacher/controller/courseController.dart';
 
 class CourseListScreen extends StatelessWidget {
-  final Function(String courseTitle) onSelectCourse;
+  final Function(String courseTitle, String courseId)
+      onSelectCourse; // Updated to include courseId
+  final String currentUserId;
 
-  CourseListScreen({super.key, required this.onSelectCourse});
-
-  final List<Map<String, dynamic>> courseList = [
-    {
-      'title': "UI/UX Mastery",
-      'total': "32 Student Enrolled",
-      'icon': Icons.design_services
-    },
-    {
-      'title': "Flutter Bootcamp",
-      'total': "21 Student Enrolled",
-      'icon': Icons.code
-    },
-  ];
+  const CourseListScreen({
+    super.key,
+    required this.onSelectCourse,
+    required this.currentUserId,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final CourseController controller =
+        Get.put(CourseController(currentUserId: currentUserId));
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Courses"),
@@ -31,6 +29,7 @@ class CourseListScreen extends StatelessWidget {
         child: Column(
           children: [
             TextField(
+              onChanged: (value) => controller.searchCourses(value),
               decoration: InputDecoration(
                 hintText: "Search your courses...",
                 prefixIcon: const Icon(Icons.search),
@@ -40,23 +39,26 @@ class CourseListScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Expanded(
-              child: ListView.separated(
-                itemCount: courseList.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final course = courseList[index];
-                  return GestureDetector(
-                    onTap: () {
-                      onSelectCourse(course['title']);
-                    },
-                    child: CourseProgressCard(
-                      title: course['title'],
-                      ttlEnroll: course['total'],
-                      icon: course['icon'],
-                    ),
-                  );
-                },
-              ),
+              child: Obx(() => controller.isLoading.value
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView.separated(
+                      itemCount: controller.filteredCourseList.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 16),
+                      itemBuilder: (context, index) {
+                        final course = controller.filteredCourseList[index];
+                        return GestureDetector(
+                          onTap: () {
+                            onSelectCourse(
+                                course['title'], course['courseId'].toString());
+                          },
+                          child: CourseProgressCard(
+                            title: course['title'],
+                            ttlEnroll: course['total'],
+                            icon: Icons.code,
+                          ),
+                        );
+                      },
+                    )),
             ),
           ],
         ),
@@ -65,7 +67,6 @@ class CourseListScreen extends StatelessWidget {
   }
 }
 
-// Reusable Card for Courses
 class CourseProgressCard extends StatelessWidget {
   final String title;
   final String ttlEnroll;

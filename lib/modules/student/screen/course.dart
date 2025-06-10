@@ -108,6 +108,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                               progress: course['progress'],
                               icon: _getIconData(course['icon']),
                               courseId: course['courseId'],
+                              userId: widget.userId.toString(),
                               onTap: () {
                                 Navigator.push(
                                   context,
@@ -115,6 +116,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
                                     builder: (context) => ChapterScreen(
                                       courseId: course['courseId'],
                                       courseTitle: course['title'],
+                                      userId: widget.userId.toString(),
                                     ),
                                   ),
                                 );
@@ -133,6 +135,7 @@ class _MyCoursesScreenState extends State<MyCoursesScreen> {
 class CourseProgressCard extends StatelessWidget {
   final String title;
   final String teacher;
+  final String userId;
   final double progress;
   final IconData icon;
   final String courseId;
@@ -145,6 +148,7 @@ class CourseProgressCard extends StatelessWidget {
     required this.progress,
     required this.icon,
     required this.courseId,
+    required this.userId,
     this.onTap,
   });
 
@@ -166,6 +170,7 @@ class CourseProgressCard extends StatelessWidget {
                   builder: (context) => ChapterScreen(
                     courseId: courseId,
                     courseTitle: title,
+                    userId: userId,
                   ),
                 ),
               );

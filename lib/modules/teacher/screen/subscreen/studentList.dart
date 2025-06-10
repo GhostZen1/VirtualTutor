@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:tosl_operation/modules/global.dart';
 
 class StudentListScreen extends StatelessWidget {
   final String courseTitle;

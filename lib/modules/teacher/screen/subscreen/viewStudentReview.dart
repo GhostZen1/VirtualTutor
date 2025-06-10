@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:tosl_operation/modules/global.dart';
 
 class ViewStudentReviewScreen extends StatelessWidget {
   ViewStudentReviewScreen({super.key});

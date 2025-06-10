@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tosl_operation/modules/auth/screen/login.dart';
 import 'package:tosl_operation/modules/student/component/studentRoute.dart';
+import 'package:tosl_operation/modules/teacher/component/teacherRoute.dart';
 import 'package:tosl_operation/shared/common/theme.dart';
 
 void main() {
@@ -21,9 +22,9 @@ class MyApp extends StatelessWidget {
       // ),
       theme: appTheme(),
       //home: const LoginScreen(),
-      home: const StudentRoutePage(userId: 1),
+      //home: const StudentRoutePage(userId: 1),
       //home: AdminRoutePage(userId: 3),
-      //home: const TeacherRoutePage(userId: 2),
+      home: const TeacherRoutePage(userId: 2),
     );
   }
 }

@@ -220,6 +220,7 @@ class CourseHomeScreenState extends State<CourseHomeScreen> {
                                           builder: (context) => ChapterScreen(
                                             courseId: course['courseId'],
                                             courseTitle: course['title'],
+                                            userId: widget.userId.toString(),
                                           ),
                                         ),
                                       )
