@@ -1,12 +1,9 @@
-import 'package:tosl_operation/modules/teacher/controller/teacherController.dart';
-import 'package:tosl_operation/modules/teacher/screen/manage/manageChapter.dart';
-import 'package:tosl_operation/modules/teacher/screen/subscreen/analyzeStudentPerformance.dart';
-import 'package:tosl_operation/modules/teacher/screen/manage/manageLearningMaterial.dart';
-import 'package:tosl_operation/modules/teacher/screen/manage/manageQuiz.dart';
-import 'package:tosl_operation/modules/teacher/screen/subscreen/trackStudentProgress.dart';
-import 'package:tosl_operation/modules/teacher/screen/courseList.dart';
-import 'package:tosl_operation/modules/teacher/component/card.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:tosl_operation/modules/global.dart';
+import 'package:tosl_operation/modules/teacher/component/card.dart';
+import 'package:tosl_operation/modules/teacher/controller/courseController.dart';
+import 'package:tosl_operation/modules/teacher/controller/teacherController.dart';
 import 'package:tosl_operation/modules/teacher/screen/subscreen/viewStudentReview.dart';
 
 class TeacherHomeScreen extends StatefulWidget {
@@ -20,16 +17,20 @@ class TeacherHomeScreen extends StatefulWidget {
 
 class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
   final TeacherController teacherController = TeacherController();
+  final ProgressController progressController = Get.put(ProgressController());
 
   String teacherName = "Dr. null";
   bool isLoading = true;
   String? errorMessage;
   UserModel? teacherData;
+  String searchQuery = '';
+  String? selectedCourse;
 
   @override
   void initState() {
     super.initState();
     _loadTeacherData();
+    progressController.fetchProgressData();
   }
 
   Future<void> _loadTeacherData() async {
@@ -38,7 +39,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
           await TeacherController.fetchTeacherById(widget.userId.toString());
       setState(() {
         teacherData = data;
-        teacherName = data.username ?? "Dr. null";
+        teacherName = data.username;
         isLoading = false;
       });
     } catch (e) {
@@ -49,6 +50,9 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final CourseController controller =
+        Get.put(CourseController(currentUserId: widget.userId.toString()));
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Homepage"),
@@ -57,44 +61,49 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
       backgroundColor: const Color(0xFFF7F9FC),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Hello, $teacherName",
-                        style:
-                            Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                      ),
-                      Text(
-                        isLoading
-                            ? "Loading your data..."
-                            : errorMessage != null
-                                ? "Using cached data"
-                                : "Welcome back!",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: errorMessage != null
-                                  ? Colors.orange.shade600
-                                  : null,
-                            ),
-                      ),
-                    ],
-                  ),
-                ],
-              ).animate().fadeIn(duration: 500.ms),
+              Text(
+                "Hello, $teacherName",
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              Text(
+                isLoading
+                    ? "Loading your data..."
+                    : errorMessage != null
+                        ? "Using cached data"
+                        : "Welcome back!",
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color:
+                          errorMessage != null ? Colors.orange.shade600 : null,
+                    ),
+              ),
               const SizedBox(height: 20),
               Wrap(
                 spacing: 10,
-                runSpacing: 10,
+                runSpacing: 5,
                 children: [
+                  // filterChip(
+                  //   context,
+                  //   icon: Icons.show_chart,
+                  //   label: "Student Progress",
+                  //   color: Colors.blue,
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) =>
+                  //             const TrackStudentProgressScreen(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
                   filterChip(
                     context,
                     icon: Icons.feedback,
@@ -104,140 +113,124 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ViewStudentReviewScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  filterChip(
-                    context,
-                    icon: Icons.bar_chart,
-                    label: "Analytics",
-                    color: Colors.green,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              AnalyzeStudentPerformanceScreen(),
+                          builder: (context) => ViewStudentReviewScreen(
+                            teacherId: widget.userId,
+                          ),
                         ),
                       );
                     },
                   ),
                 ],
-              ).animate().fadeIn(duration: 500.ms, delay: 400.ms),
-              const SizedBox(height: 15),
+              ),
+              const SizedBox(height: 20),
               Text(
-                "Teacher Modules",
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                "Student Progress",
+                textAlign: TextAlign.left,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
-              ).animate().fadeIn(duration: 500.ms, delay: 1000.ms),
-              const SizedBox(height: 12),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.2,
-                children: [
-                  moduleCard(
-                    context,
-                    icon: Icons.people,
-                    label: "View Student Progress",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CourseListScreen(
-                            currentUserId: widget.userId.toString(),
-                            onSelectCourse: (courseTitle, courseId) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      TrackStudentProgressScreen(
-                                    courseTitle: courseTitle,
-                                    courseId: courseId,
-                                  ),
+              ),
+              const SizedBox(height: 20),
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final courseList = progressController.progressData
+                    .map((e) => e['course'] as String)
+                    .toSet()
+                    .toList();
+
+                final filteredData =
+                    progressController.progressData.where((entry) {
+                  final matchStudent = entry['student']
+                      .toLowerCase()
+                      .contains(searchQuery.toLowerCase());
+                  final matchCourse = selectedCourse == null ||
+                      entry['course'] == selectedCourse;
+                  return matchStudent && matchCourse;
+                }).toList();
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 0.0, vertical: 10),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 250,
+                              child: TextField(
+                                decoration: const InputDecoration(
+                                  labelText: "Search Student",
+                                  prefixIcon: Icon(Icons.search),
+                                  border: OutlineInputBorder(),
                                 ),
-                              );
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  // moduleCard(
-                  //   context,
-                  //   icon: Icons.book,
-                  //   label: "Manage Chapters",
-                  //   onTap: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (context) => CourseListScreen(
-                  //           currentUserId: widget.userId.toString(),
-                  //           onSelectCourse: (courseTitle, courseId) {
-                  //             Navigator.push(
-                  //               context,
-                  //               MaterialPageRoute(
-                  //                 builder: (context) => ManageChaptersScreen(
-                  //                   courseTitle: courseTitle,
-                  //                   courseId: courseId,
-                  //                   userId: widget.userId.toString(),
-                  //                 ),
-                  //               ),
-                  //             );
-                  //           },
-                  //         ),
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
-                  moduleCard(
-                    context,
-                    icon: Icons.quiz,
-                    label: "Manage Quiz / Activity",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ManageQuizScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  moduleCard(
-                    context,
-                    icon: Icons.show_chart,
-                    label: "Track Student Progress",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => CourseListScreen(
-                            currentUserId: widget.userId.toString(),
-                            onSelectCourse: (courseTitle, courseId) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      TrackStudentProgressScreen(
-                                    courseTitle: courseTitle,
-                                    courseId: courseId,
-                                  ),
+                                onChanged: (value) {
+                                  setState(() => searchQuery = value);
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            SizedBox(
+                              width: 250,
+                              child: DropdownButtonFormField<String>(
+                                isExpanded: true,
+                                decoration: const InputDecoration(
+                                  labelText: "Filter by Course",
+                                  border: OutlineInputBorder(),
                                 ),
-                              );
-                            },
-                          ),
+                                value: selectedCourse,
+                                items: [
+                                  const DropdownMenuItem(
+                                    value: null,
+                                    child: Text("All Courses"),
+                                  ),
+                                  ...courseList.map(
+                                    (course) => DropdownMenuItem(
+                                      value: course,
+                                      child: Text(course,
+                                          overflow: TextOverflow.ellipsis),
+                                    ),
+                                  )
+                                ],
+                                onChanged: (value) {
+                                  setState(() => selectedCourse = value);
+                                },
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ).animate().fadeIn(duration: 500.ms, delay: 1200.ms),
+                      ),
+                    ),
+                    const Divider(),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        columns: const [
+                          DataColumn(label: Text("Student")),
+                          DataColumn(label: Text("Course")),
+                          DataColumn(label: Text("Progress (%)")),
+                          DataColumn(label: Text("Enrollment Date")),
+                          DataColumn(label: Text("Status")),
+                        ],
+                        rows: filteredData.map((entry) {
+                          return DataRow(cells: [
+                            DataCell(Text(entry['student'])),
+                            DataCell(Text(entry['course'])),
+                            DataCell(Text("${entry['progress']}%")),
+                            DataCell(Text(entry['enrollmentDate'])),
+                            DataCell(Text(entry['completionStatus'])),
+                          ]);
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                );
+              }),
             ],
           ),
         ),

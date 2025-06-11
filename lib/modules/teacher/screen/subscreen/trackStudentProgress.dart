@@ -3,13 +3,8 @@ import 'package:get/get.dart';
 import 'package:tosl_operation/modules/teacher/controller/courseController.dart';
 
 class TrackStudentProgressScreen extends StatefulWidget {
-  final String courseId;
-  final String courseTitle;
-
   const TrackStudentProgressScreen({
     super.key,
-    required this.courseId,
-    required this.courseTitle,
   });
 
   @override

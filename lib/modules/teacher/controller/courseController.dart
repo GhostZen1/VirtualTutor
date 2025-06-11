@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:tosl_operation/modules/global.dart';
+import 'package:tosl_operation/modules/student/studentModel.dart';
 
 class CourseController extends GetxController {
   var courseList = <Map<String, dynamic>>[].obs;
@@ -27,9 +28,15 @@ class CourseController extends GetxController {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success']) {
-          courseList
-              .assignAll(List<Map<String, dynamic>>.from(data['courses']));
-          filteredCourseList.assignAll(courseList);
+          // Add default category if missing
+          final courses = List<Map<String, dynamic>>.from(data['courses'])
+              .map((course) => {
+                    ...course,
+                    'category': course['category'] ?? 'Uncategorized',
+                  })
+              .toList();
+          courseList.assignAll(courses);
+          filteredCourseList.assignAll(courses);
         } else {
           Get.snackbar('Error', data['message']);
         }
@@ -56,17 +63,43 @@ class CourseController extends GetxController {
     }
   }
 
-  // Optional: Add dummy course for testing dynamic updates
+  Future<UserModel> fetchUser(String userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiBase.baseUrl}getUser.php'),
+        body: {'userId': userId},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return UserModel(
+            username: data['user']['username'] ?? 'User',
+            email: '',
+            role: '',
+          );
+        } else {
+          throw data['message'];
+        }
+      } else {
+        throw 'Failed to fetch user';
+      }
+    } catch (e) {
+      throw 'Error fetching user: $e';
+    }
+  }
+
   void addDummyCourse() {
     courseList.add({
       'title': 'Dummy Course',
-      'total': '0 👨‍🎓 Student Enrolled',
-      'icon': 'Icons.bug_report',
+      'total': '0',
+      'courseId': (courseList.length + 1).toString(),
+      'icon': 'icons.bug_report',
+      'category': 'Uncategorized',
     });
     filteredCourseList.assignAll(courseList);
   }
 
-  // Optional: Modify existing course title
   void updateCourseTitle(int index, String newTitle) {
     final course = courseList[index];
     courseList[index] = {

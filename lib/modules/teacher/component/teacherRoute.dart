@@ -35,7 +35,9 @@ class Route extends State<TeacherRoutePage> {
   @override
   Widget build(BuildContext context) {
     final List<Widget> screens = [
-      TeacherHomeScreen(userId: widget.userId),
+      TeacherHomeScreen(
+        userId: widget.userId,
+      ),
       CourseListScreen(
         currentUserId: widget.userId.toString(), // Convert int to String
         onSelectCourse: (courseTitle, courseId) {
