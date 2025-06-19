@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:tosl_operation/modules/global.dart';
+import 'package:tosl_operation/modules/teacher/component/card.dart';
 import 'package:tosl_operation/modules/teacher/controller/chapterController.dart';
 import 'package:tosl_operation/modules/teacher/screen/manage/manageMaterial.dart';
+import 'package:tosl_operation/modules/teacher/screen/manage/manageQuiz.dart';
 
 class ManageChapterScreen extends StatefulWidget {
   final int courseId;
@@ -21,20 +24,23 @@ class ManageChapterScreen extends StatefulWidget {
 class _ManageChapterScreenState extends State<ManageChapterScreen> {
   final ChapterController controller = ChapterController();
   List<Map<String, dynamic>> chapters = [];
+  List<Map<String, dynamic>> quizzes = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    loadChapters();
+    loadChaptersAndQuizzes();
   }
 
-  // Load chapters for the course
-  Future<void> loadChapters() async {
+  Future<void> loadChaptersAndQuizzes() async {
     try {
       final fetchedChapters = await controller.fetchChapters(widget.courseId);
+      final fetchedQuizzes =
+          await controller.getQuizzesByCourse(widget.courseId);
       setState(() {
         chapters = fetchedChapters;
+        quizzes = fetchedQuizzes;
         isLoading = false;
       });
     } catch (e) {
@@ -42,12 +48,13 @@ class _ManageChapterScreenState extends State<ManageChapterScreen> {
         isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading chapters: $e')),
+        SnackBar(
+            content: Text('Error loading data: $e'),
+            backgroundColor: Colors.red),
       );
     }
   }
 
-  // Navigate to chapter materials management
   void navigateToChapterMaterials(int chapterId, String chapterTitle) {
     Navigator.push(
       context,
@@ -60,74 +67,29 @@ class _ManageChapterScreenState extends State<ManageChapterScreen> {
     );
   }
 
-  // Show add chapter dialog
+  void navigateToQuizManagement(int quizId, String quizTitle) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ManageQuizScreen(
+          quizId: quizId,
+          quizTitle: quizTitle,
+          courseId: widget.courseId,
+        ),
+      ),
+    );
+  }
+
   void showAddChapterDialog() {
     showDialog(
       context: context,
       builder: (context) => AddChapterDialog(
         courseId: widget.courseId,
-        onChapterAdded: loadChapters,
+        onChapterAdded: loadChaptersAndQuizzes,
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Manage Chapters - ${widget.courseTitle}'),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Chapters',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : chapters.isEmpty
-                        ? const Center(child: Text('No chapters available'))
-                        : ListView.separated(
-                            itemCount: chapters.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final chapter = chapters[index];
-                              return ChapterManagementCard(
-                                chapterId: chapter['id'] ?? 0,
-                                title: chapter['title'] ?? 'Untitled Chapter',
-                                description: chapter['description'] ?? '',
-                                chapterOrder: chapter['chapter_order'] ?? 0,
-                                onTap: () => navigateToChapterMaterials(
-                                  chapter['id'] ?? 0,
-                                  chapter['title'] ?? 'Untitled Chapter',
-                                ),
-                                onDelete: () =>
-                                    deleteChapter(chapter['id'] ?? 0),
-                              );
-                            },
-                          ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: showAddChapterDialog,
-        backgroundColor: Colors.deepPurple,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
-    );
-  }
-
-  // Delete chapter
   Future<void> deleteChapter(int chapterId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -159,7 +121,7 @@ class _ManageChapterScreenState extends State<ManageChapterScreen> {
               backgroundColor: Colors.green,
             ),
           );
-          loadChapters(); // Refresh the list
+          loadChaptersAndQuizzes();
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -178,266 +140,147 @@ class _ManageChapterScreenState extends State<ManageChapterScreen> {
       }
     }
   }
-}
 
-class ChapterManagementCard extends StatelessWidget {
-  final int chapterId;
-  final String title;
-  final String description;
-  final int chapterOrder;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
+  Future<void> deleteQuiz(int quizId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Quiz'),
+        content: const Text(
+            'Are you sure you want to delete this quiz? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
 
-  const ChapterManagementCard({
-    super.key,
-    required this.chapterId,
-    required this.title,
-    required this.description,
-    required this.chapterOrder,
-    required this.onTap,
-    required this.onDelete,
-  });
+    if (confirmed == true) {
+      try {
+        final success = await controller.deleteQuiz(quizId);
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Quiz deleted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          loadChaptersAndQuizzes();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Failed to delete quiz'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting quiz: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Manage Chapters - ${widget.courseTitle}'),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Chapter $chapterOrder',
-                          style: TextStyle(
-                            color: Colors.deepPurple,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          title,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: onDelete,
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    tooltip: 'Delete Chapter',
-                  ),
-                ],
+              const Text(
+                'Chapters',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              if (description.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 14,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(
-                    Icons.play_circle_outline,
-                    size: 16,
-                    color: Colors.deepPurple,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Manage Materials',
-                    style: TextStyle(
-                      color: Colors.deepPurple,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const Spacer(),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey[400],
-                  ),
-                ],
+              const SizedBox(height: 16),
+              Expanded(
+                flex: 1,
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : chapters.isEmpty
+                        ? const Center(child: Text('No chapters available'))
+                        : ListView.separated(
+                            itemCount: chapters.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final chapter = chapters[index];
+                              return ChapterManagementCard(
+                                chapterId: chapter['id'] ?? 0,
+                                title: chapter['title'] ?? 'Untitled Chapter',
+                                description: chapter['description'] ?? '',
+                                chapterOrder: chapter['chapter_order'] ?? 0,
+                                onTap: () => navigateToChapterMaterials(
+                                  chapter['id'] ?? 0,
+                                  chapter['title'] ?? 'Untitled Chapter',
+                                ),
+                                onDelete: () =>
+                                    deleteChapter(chapter['id'] ?? 0),
+                              );
+                            },
+                          ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Quizzes',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                flex: 1,
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : quizzes.isEmpty
+                        ? const Center(child: Text('No quizzes available'))
+                        : ListView.separated(
+                            itemCount: quizzes.length,
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) {
+                              final quiz = quizzes[index];
+                              return QuizManagementCard(
+                                quizId: quiz['id'] ?? 0,
+                                title: quiz['title'] ?? 'Untitled Quiz',
+                                description: quiz['description'] ?? '',
+                                questionCount: quiz['question_count'] ?? 0,
+                                quizType:
+                                    quiz['quiz_type'] ?? 'Multiple Choice',
+                                dueDate: quiz['due_date'] ?? '',
+                                onTap: () => navigateToQuizManagement(
+                                  quiz['id'] ?? 0,
+                                  quiz['title'] ?? 'Untitled Quiz',
+                                ),
+                                onDelete: () => deleteQuiz(quiz['id'] ?? 0),
+                              );
+                            },
+                          ),
               ),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class AddChapterDialog extends StatefulWidget {
-  final int courseId;
-  final VoidCallback onChapterAdded;
-
-  const AddChapterDialog({
-    super.key,
-    required this.courseId,
-    required this.onChapterAdded,
-  });
-
-  @override
-  State<AddChapterDialog> createState() => _AddChapterDialogState();
-}
-
-class _AddChapterDialogState extends State<AddChapterDialog> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _contentController = TextEditingController();
-  final _orderController = TextEditingController();
-  final ChapterController controller = ChapterController();
-  bool isLoading = false;
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _contentController.dispose();
-    _orderController.dispose();
-    super.dispose();
-  }
-
-  Future<void> addChapter() async {
-    if (_titleController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a chapter title')),
-      );
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-    });
-
-    try {
-      final success = await controller.addChapter(
-        courseId: widget.courseId,
-        title: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        content: _contentController.text.trim(),
-      );
-
-      if (success) {
-        Navigator.pop(context);
-        widget.onChapterAdded();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Chapter added successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to add chapter'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error adding chapter: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Add New Chapter'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Chapter Title',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            // TextField(
-            //   controller: _orderController,
-            //   decoration: const InputDecoration(
-            //     labelText: 'Chapter Order',
-            //     border: OutlineInputBorder(),
-            //   ),
-            //   keyboardType: TextInputType.number,
-            // ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _descriptionController,
-              decoration: const InputDecoration(
-                labelText: 'Description',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _contentController,
-              decoration: const InputDecoration(
-                labelText: 'Content',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
-        ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: showAddChapterDialog,
+        backgroundColor: Colors.deepPurple,
+        child: const Icon(Icons.add, color: Colors.white),
       ),
-      actions: [
-        TextButton(
-          onPressed: isLoading ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: isLoading ? null : addChapter,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.deepPurple,
-            foregroundColor: Colors.white,
-          ),
-          child: isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text('Add Chapter'),
-        ),
-      ],
     );
   }
 }

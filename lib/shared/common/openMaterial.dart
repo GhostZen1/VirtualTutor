@@ -2,7 +2,7 @@ import 'package:tosl_operation/modules/global.dart';
 
 Future<void> openMaterial(String type, String url, BuildContext context) async {
   if (!url.startsWith('http')) {
-    url = 'https://$url';
+    url = '${ApiBase.baseUrl}$url';
   }
 
   Uri materialUri = Uri.parse(url);

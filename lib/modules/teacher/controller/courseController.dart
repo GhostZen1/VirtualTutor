@@ -28,7 +28,7 @@ class CourseController extends GetxController {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success']) {
-          // Add default category if missing
+          print(data);
           final courses = List<Map<String, dynamic>>.from(data['courses'])
               .map((course) => {
                     ...course,
