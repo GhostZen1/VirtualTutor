@@ -183,4 +183,156 @@ class CourseController {
       throw Exception('Failed to fetch user enroll data');
     }
   }
+
+  // Future<List<Map<String, dynamic>>> fetchCourseChapters(
+  //     String courseId) async {
+  //   final response = await http.post(
+  //     Uri.parse('${ApiBase.baseUrl}fetchChapters.php'),
+  //     headers: {'Content-Type': 'application/json'},
+  //     body: json.encode({'course_id': courseId}),
+  //   );
+  //   if (response.statusCode == 200) {
+  //     final data = json.decode(response.body);
+  //     if (data['success'] == true) {
+  //       return List<Map<String, dynamic>>.from(data['chapters']);
+  //     }
+  //   }
+  //   throw Exception('Failed to fetch chapters');
+  // }
+
+  Future<List<Map<String, dynamic>>> fetchCourseQuizzes(String courseId) async {
+    final response = await http.post(
+      Uri.parse('${ApiBase.baseUrl}fetchQuizzes.php?course_id=${courseId}'),
+      // headers: {'Content-Type': 'application/json'},
+      // body: json.encode({'course_id': courseId}),
+    );
+    print('courseid ${courseId}');
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true) {
+        return List<Map<String, dynamic>>.from(data['quizzes']);
+      }
+    }
+    throw Exception('Failed to fetch quizzes asdsadas');
+  }
+
+  Future<Map<String, dynamic>> submitQuiz({
+    required String userId,
+    required String quizId,
+    required Map<String, String> answers,
+  }) async {
+    final response = await http.post(
+      Uri.parse('${ApiBase.baseUrl}submitQuiz.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'userId': userId,
+        'quizId': quizId,
+        'answers': answers,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true) {
+        return {
+          'totalMarks': data['totalMarks'],
+          'percentage': data['percentage'],
+          'totalQuestions': data['totalQuestions'],
+        };
+      }
+    }
+    throw Exception('Failed to submit quiz: ${response.body}');
+  }
+
+  Future<int> getTeacherId({required String courseId}) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiBase.baseUrl}getTeacherId.php'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'courseId': courseId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true) {
+          return data['teacherId'] as int;
+        } else {
+          throw Exception('Failed to get teacher ID: ${data['message']}');
+        }
+      } else {
+        throw Exception('HTTP Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching teacher ID: $e');
+    }
+  }
+
+  Future<bool> submitFeedback({
+    required String studentId,
+    required String teacherId,
+    required String courseId,
+    required int rating,
+    required String comment,
+  }) async {
+    final response = await http.post(
+      Uri.parse('${ApiBase.baseUrl}submitFeedback.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'studentId': studentId,
+        'teacherId': teacherId,
+        'courseId': courseId,
+        'rating': rating,
+        'comment': comment,
+      }),
+    );
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['success'] == true;
+    }
+    throw Exception('Failed to submit feedback: ${response.body}');
+  }
+
+  Future<bool> finishCourse({
+    required String userId,
+    required String courseId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('${ApiBase.baseUrl}finishCourse.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({
+        'userId': userId,
+        'courseId': courseId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['success'] == true;
+    } else {
+      throw Exception('Server error: ${response.statusCode}');
+    }
+  }
+
+  Future<String?> fetchEnrollmentStatus({
+    required String userId,
+    required String courseId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('${ApiBase.baseUrl}getEnrollmentStatus.php'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'userId': userId, 'courseId': courseId}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['success'] == true) {
+        return data['status'];
+      }
+    }
+    throw Exception('Failed to fetch enrollment status');
+  }
 }

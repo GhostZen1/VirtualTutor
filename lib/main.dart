@@ -21,8 +21,8 @@ class MyApp extends StatelessWidget {
       //   useMaterial3: true,
       // ),
       theme: appTheme(),
-      //home: const LoginScreen(),
-      home: const StudentRoutePage(userId: 1),
+      home: const LoginScreen(),
+      //home: const StudentRoutePage(userId: 1),
       //home: AdminRoutePage(userId: 3),
       //home: const TeacherRoutePage(userId: 2),
     );

@@ -407,7 +407,6 @@ class _AddChapterDialogState extends State<AddChapterDialog> {
         throw Exception('Failed to generate quiz from PDFs');
       }
 
-      // Add quiz to the database
       final success = await controller.addQuiz(
         courseId: widget.courseId,
         title: _quizTitleController.text.trim(),

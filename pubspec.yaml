@@ -52,6 +52,7 @@ dependencies:
   get: ^4.7.2
   pdf: ^3.10.8
   syncfusion_flutter_pdf: ^24.2.5
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

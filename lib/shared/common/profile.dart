@@ -2,6 +2,8 @@ import 'package:tosl_operation/modules/global.dart';
 import 'package:tosl_operation/modules/auth/screen/login.dart';
 import 'package:tosl_operation/shared/common/policies.dart';
 import 'package:tosl_operation/shared/utils/getProfileData.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class ProfileScreen extends StatefulWidget {
   final int userId;
@@ -16,6 +18,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   ProfileModel? userData;
   bool isLoading = true;
+  bool isUploadingImage = false;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -32,12 +36,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
       });
     } else {
       setState(() {
-        isLoading = false; // stop the loading indicator even if failed
+        isLoading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to load user data')),
       );
     }
+  }
+
+  Future<void> _pickAndUploadImage() async {
+    try {
+      final status = await Permission.camera.request();
+      if (status.isDenied || status.isPermanentlyDenied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permission denied to access storage')),
+        );
+        return;
+      }
+
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxHeight: 800,
+        maxWidth: 800,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        setState(() {
+          isUploadingImage = true;
+        });
+
+        final result = await ProfileServices.uploadProfilePicture(
+          userId: widget.userId,
+          imagePath: image.path,
+        );
+
+        if (result['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(result['message'] ?? 'Profile picture updated!')),
+          );
+          await loadUserData();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text(
+                    result['message'] ?? 'Failed to update profile picture')),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
+    } finally {
+      setState(() {
+        isUploadingImage = false;
+      });
+    }
+  }
+
+  Widget _buildProfileImage() {
+    return Stack(
+      children: [
+        CircleAvatar(
+          radius: 50,
+          backgroundColor: Colors.blueAccent,
+          backgroundImage: userData?.profilePicture != null &&
+                  userData!.profilePicture!.isNotEmpty
+              ? NetworkImage(
+                  '${ApiBase.baseUrl}uploads/profiles/${userData!.profilePicture}')
+              : null,
+          child: userData?.profilePicture == null ||
+                  userData!.profilePicture!.isEmpty
+              ? const Icon(Icons.person, color: Colors.white, size: 50)
+              : null,
+        ),
+        if (isUploadingImage)
+          const Positioned.fill(
+            child: CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.black54,
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: GestureDetector(
+            onTap: isUploadingImage ? null : _pickAndUploadImage,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+              child: const Icon(
+                Icons.camera_alt,
+                color: Colors.white,
+                size: 20,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -74,16 +178,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.all(16),
-                          leading: const CircleAvatar(
-                            backgroundColor: Colors.blueAccent,
-                            child: Icon(Icons.person, color: Colors.white),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            children: [
+                              _buildProfileImage(),
+                              const SizedBox(height: 16),
+                              Text(userData!.username,
+                                  style:
+                                      Theme.of(context).textTheme.titleLarge),
+                              Text(userData!.email,
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium),
+                            ],
                           ),
-                          title: Text(userData!.username,
-                              style: Theme.of(context).textTheme.titleLarge),
-                          subtitle: Text(userData!.email,
-                              style: Theme.of(context).textTheme.bodyMedium),
                         ),
                       ),
                       const SizedBox(height: 16),
