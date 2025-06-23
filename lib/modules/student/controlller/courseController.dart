@@ -257,7 +257,7 @@ class CourseController {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
+        print("data $data");
         if (data['success'] == true) {
           return data['teacherId'] as int;
         } else {
@@ -268,6 +268,43 @@ class CourseController {
       }
     } catch (e) {
       throw Exception('Error fetching teacher ID: $e');
+    }
+  }
+
+  Future<String> getTeacherName({required int? teacherId}) async {
+    if (teacherId == null) {
+      throw Exception('teacherId cannot be null');
+    }
+
+    try {
+      final response = await http.post(
+        Uri.parse('${ApiBase.baseUrl}getTeacherName.php'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'teacherId': teacherId,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true && data['data'] != null) {
+          final name = data['data']['Username'] ?? '';
+          if (name.isEmpty) {
+            throw Exception('Teacher name not found');
+          }
+          print('name $name');
+          return name;
+        } else {
+          throw Exception('Failed to get teacher name: ${data['message']}');
+        }
+      } else {
+        throw Exception('HTTP Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching teacher name: $e');
     }
   }
 

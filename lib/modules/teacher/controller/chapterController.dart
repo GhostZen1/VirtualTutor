@@ -125,7 +125,7 @@ class ChapterController {
           'is_downloadable': isDownloadable,
         }),
       );
-
+      print('url' + url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['success'] == true;

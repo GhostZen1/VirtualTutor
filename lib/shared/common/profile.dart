@@ -341,7 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ?.copyWith(color: Colors.red)),
                           trailing: const Icon(Icons.logout, color: Colors.red),
                           onTap: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => const LoginScreen()),

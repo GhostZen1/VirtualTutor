@@ -23,24 +23,40 @@ class TeacherController {
 }
 
 class UserModel {
-  final String userId;
+  final int userId;
   final String username;
-  final String name;
-  final String courseId;
+  final List<CourseModel> courses;
 
   UserModel({
     required this.userId,
     required this.username,
-    required this.name,
-    required this.courseId,
+    required this.courses,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       userId: json['UserId'],
       username: json['Username'],
-      name: json['Name'],
+      courses: (json['Courses'] as List)
+          .map((courseJson) => CourseModel.fromJson(courseJson))
+          .toList(),
+    );
+  }
+}
+
+class CourseModel {
+  final int courseId;
+  final String courseName;
+
+  CourseModel({
+    required this.courseId,
+    required this.courseName,
+  });
+
+  factory CourseModel.fromJson(Map<String, dynamic> json) {
+    return CourseModel(
       courseId: json['CourseID'],
+      courseName: json['CourseName'],
     );
   }
 }

@@ -3,8 +3,7 @@ import 'package:tosl_operation/modules/global.dart';
 import 'package:tosl_operation/modules/teacher/controller/courseController.dart';
 
 class CourseListScreen extends StatelessWidget {
-  final Function(String courseTitle, String courseId)
-      onSelectCourse; // Updated to include courseId
+  final Function(String courseTitle, String courseId) onSelectCourse;
   final String currentUserId;
 
   const CourseListScreen({

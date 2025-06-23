@@ -119,7 +119,9 @@ class _MaterialScreenState extends State<MaterialScreen> {
                                 materialId: material['id'] ?? 0,
                                 title: material['title'] ?? 'Untitled Material',
                                 type: material['type'] ?? 'Unknown',
-                                url: material['url'] ?? '',
+                                url: material['url'] != null
+                                    ? '${ApiBase.baseUrl}${material['url']}'
+                                    : '',
                                 isDone: (material['isDone'] ?? 0) == 1,
                                 onToggleCompletion: toggleMaterialCompletion,
                               );

@@ -1,4 +1,6 @@
+import 'package:path/path.dart';
 import 'package:tosl_operation/modules/global.dart';
+import 'package:tosl_operation/modules/student/controlller/courseController.dart';
 
 class CourseCard extends StatelessWidget {
   final String title;
@@ -143,13 +145,84 @@ class ChapterCard extends StatelessWidget {
   final String title;
   final String description;
   final VoidCallback onTap;
+  final BuildContext context; // Avoid passing context as a parameter
+  final String userId;
+  final String courseId;
+  final bool isCourseCompleted;
+  final VoidCallback onCourseCompleted; // New callback for completion
 
   const ChapterCard({
     super.key,
     required this.title,
     required this.description,
     required this.onTap,
+    required this.context,
+    required this.userId,
+    required this.courseId,
+    required this.isCourseCompleted,
+    required this.onCourseCompleted, // Added callback
   });
+
+  Future<void> downloadCertificate() async {
+    final certUrl =
+        '${ApiBase.baseUrl}generateCertificate.php?userId=$userId&courseId=$courseId';
+    try {
+      // Assuming openMaterial is a utility function to handle downloads
+      await openMaterial('certificate', certUrl, context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error downloading certificate: $e')),
+      );
+    }
+  }
+
+  Future<void> _finishCourse() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Finish Course'),
+        content: const Text(
+            'Are you sure you want to mark this course as completed?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.check_circle),
+            label: const Text('Confirm'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final CourseController controller = CourseController();
+        final success = await controller.finishCourse(
+          userId: userId,
+          courseId: courseId,
+        );
+
+        if (success) {
+          onCourseCompleted(); // Trigger callback to update state in parent
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Course marked as completed')),
+          );
+        } else {
+          throw Exception('Failed to update course status');
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +249,22 @@ class ChapterCard extends StatelessWidget {
                 style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              ElevatedButton.icon(
+                onPressed:
+                    isCourseCompleted ? downloadCertificate : _finishCourse,
+                icon: Icon(isCourseCompleted
+                    ? Icons.file_download
+                    : Icons.check_circle),
+                label: Text(isCourseCompleted
+                    ? 'Download Certificate'
+                    : 'Finish Course'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      isCourseCompleted ? Colors.blue : Colors.green,
+                  minimumSize: const Size.fromHeight(50),
+                ),
               ),
             ],
           ),

@@ -117,16 +117,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
-                GestureDetector(
-                  onTap: () {
-                    const RegisterPage();
-                  },
-                  child: const Text(
-                    "Forgot Password?",
-                    style: TextStyle(color: Colors.blueAccent),
-                  ),
-                ),
+                // const SizedBox(height: 15),
+                // GestureDetector(
+                //   onTap: () {
+                //     const RegisterPage();
+                //   },
+                //   child: const Text(
+                //     "Forgot Password?",
+                //     style: TextStyle(color: Colors.blueAccent),
+                //   ),
+                // ),
                 const SizedBox(height: 60),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

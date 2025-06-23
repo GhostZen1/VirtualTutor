@@ -79,6 +79,61 @@ class CourseHomeScreenState extends State<CourseHomeScreen> {
     }
   }
 
+  Future<void> showEnrollConfirmationDialog({
+    required int courseId,
+    required String title,
+    required String description,
+    required String teacher,
+    required double rating,
+  }) async {
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Enroll in $title?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                description,
+                style: const TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Teacher: $teacher',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 20),
+                  const SizedBox(width: 4),
+                  Text(rating.toStringAsFixed(1)),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _enrollInCourse(courseId);
+              },
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
+              child: const Text('Confirm Enroll'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _enrollInCourse(int courseId) async {
     setState(() {
       isLoading = true;

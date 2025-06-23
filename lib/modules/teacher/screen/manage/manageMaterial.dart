@@ -473,7 +473,6 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
         url: _urlController.text.trim(),
         description: _descriptionController.text.trim(),
         fileSize: _fileSizeController.text.trim(),
-        // materialOrder: int.tryParse(_orderController.text) ?? 1,
         isDownloadable: isDownloadable,
       );
 
@@ -603,7 +602,6 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                   final fileSizeInKB = (file.size / 1024).toStringAsFixed(2);
                   final uploadUrl =
                       Uri.parse('${ApiBase.baseUrl}uploadFile.php');
-
                   var request = http.MultipartRequest('POST', uploadUrl);
                   request.files.add(
                       await http.MultipartFile.fromPath('file', file.path!));
@@ -675,6 +673,7 @@ class _AddMaterialDialogState extends State<AddMaterialDialog> {
                 _urlController.text.isNotEmpty &&
                 selectedType != null) {
               addMaterial();
+              ManageChapterMaterialsScreen;
               Navigator.of(context).pop();
             } else {
               ScaffoldMessenger.of(context).showSnackBar(

@@ -25,10 +25,11 @@ class _ChapterScreenState extends State<ChapterScreen> {
   List<Map<String, dynamic>> chapters = [];
   List<Map<String, dynamic>> quizzes = [];
   bool isLoading = true;
-  String selectedSection = 'Chapter'; // Default section
+  String selectedSection = 'Chapter';
   final List<String> sections = ['Chapter', 'Quiz', 'Teacher Review'];
   int? teacherId;
   bool isCourseCompleted = false;
+  String? teacherName = "";
 
   @override
   void initState() {
@@ -36,6 +37,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
     loadContent();
     loadTeacherId();
     loadCourseStatus();
+    loadTeacherName();
   }
 
   Future<void> loadContent() async {
@@ -81,6 +83,37 @@ class _ChapterScreenState extends State<ChapterScreen> {
     }
   }
 
+  Future<void> loadTeacherName() async {
+    try {
+      final name = await controller.getTeacherName(teacherId: teacherId);
+      setState(() {
+        teacherName = name;
+      });
+    } catch (e) {
+      print('Error loading teacher ID: $e');
+    }
+  }
+
+  Future<void> loadCourseStatus() async {
+    try {
+      final status = await controller.fetchEnrollmentStatus(
+        userId: widget.userId,
+        courseId: widget.courseId,
+      );
+      setState(() {
+        isCourseCompleted = (status?.toLowerCase() == 'complete');
+      });
+    } catch (e) {
+      print('Error fetching course status: $e');
+    }
+  }
+
+  void _onCourseCompleted() {
+    setState(() {
+      isCourseCompleted = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -121,97 +154,11 @@ class _ChapterScreenState extends State<ChapterScreen> {
                             : _buildTeacherReview(),
               ),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed:
-                    isCourseCompleted ? downloadCertificate : _finishCourse,
-                icon: Icon(isCourseCompleted
-                    ? Icons.file_download
-                    : Icons.check_circle),
-                label: Text(isCourseCompleted
-                    ? 'Download Certificate'
-                    : 'Finish Course'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      isCourseCompleted ? Colors.blue : Colors.green,
-                  minimumSize: const Size.fromHeight(50),
-                ),
-              )
             ],
           ),
         ),
       ),
     );
-  }
-
-  Future<void> _finishCourse() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Finish Course'),
-        content: const Text(
-            'Are you sure you want to mark this course as completed?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton.icon(
-            onPressed: () => Navigator.pop(context, true),
-            icon: const Icon(Icons.check_circle),
-            label: const Text('Confirm'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-            ),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      try {
-        final success = await controller.finishCourse(
-          userId: widget.userId,
-          courseId: widget.courseId,
-        );
-
-        if (success) {
-          setState(() {
-            isCourseCompleted = true;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Course marked as completed')),
-          );
-        } else {
-          throw Exception('Failed to update course status');
-        }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    }
-  }
-
-  Future<void> loadCourseStatus() async {
-    try {
-      final status = await controller.fetchEnrollmentStatus(
-        userId: widget.userId,
-        courseId: widget.courseId,
-      );
-      setState(() {
-        setState(() {
-          isCourseCompleted = (status?.toLowerCase() == 'complete');
-        });
-      });
-    } catch (e) {
-      print('Error fetching course status: $e');
-    }
-  }
-
-  Future<void> downloadCertificate() async {
-    final certUrl =
-        '${ApiBase.baseUrl}generateCertificate.php?userId=${widget.userId}&courseId=${widget.courseId}';
-    await openMaterial('certificate', certUrl, context);
   }
 
   Widget _buildChapterList() {
@@ -237,6 +184,11 @@ class _ChapterScreenState extends State<ChapterScreen> {
                     ),
                   );
                 },
+                context: context,
+                userId: widget.userId,
+                courseId: widget.courseId,
+                isCourseCompleted: isCourseCompleted,
+                onCourseCompleted: _onCourseCompleted, // Pass callback
               );
             },
           );
@@ -253,7 +205,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
               return QuizCard(
                 title: quiz['title'] ?? 'Untitled Quiz',
                 description: quiz['description'] ?? 'No description',
-                timeLimit: quiz['time_limit'] ?? 0,
+                timeLimit: quiz['time_limit'],
                 dueDate: quiz['due_date'] ?? 'No due date',
                 onTap: () {
                   showDialog(
@@ -300,9 +252,9 @@ class _ChapterScreenState extends State<ChapterScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Review Teacher',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Text(
+            'Review Teacher $teacherName',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           RatingBar.builder(
@@ -331,6 +283,12 @@ class _ChapterScreenState extends State<ChapterScreen> {
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () async {
+              if (teacherId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Teacher ID not loaded')),
+                );
+                return;
+              }
               try {
                 final success = await controller.submitFeedback(
                   studentId: widget.userId,

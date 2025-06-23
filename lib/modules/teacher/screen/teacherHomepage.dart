@@ -35,6 +35,7 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
 
   Future<void> _loadTeacherData() async {
     try {
+      print('teacher data ${widget.userId}');
       final data =
           await TeacherController.fetchTeacherById(widget.userId.toString());
       setState(() {
@@ -42,6 +43,10 @@ class _TeacherHomeScreenState extends State<TeacherHomeScreen> {
         teacherName = data.username;
         isLoading = false;
       });
+
+      for (var course in data.courses) {
+        print('Assigned Course: ${course.courseName}');
+      }
     } catch (e) {
       print('Failed to load teacher data: $e');
       setState(() => isLoading = false);
